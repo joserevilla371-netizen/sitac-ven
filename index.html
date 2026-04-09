@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SITAC VEN - Defensa Integral</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<nav id="navbar">
+    <div class="logo">SITAC VEN v4.0</div>
+    <div class="nav-auth">
+        <button onclick="openModal('modal-registro')">REGISTRARSE</button>
+        <button class="btn-highlight" onclick="openModal('modal-login')">INICIAR SESIÓN</button>
+    </div>
+</nav>
+
+<div id="landing-page">
+    <header id="hero">
+        <div class="hero-overlay">
+            <h1>SISTEMA TÁCTICO DE COMANDO Y CONTROL</h1>
+            <p>Defensa Integral y Soberanía Tecnológica</p>
+        </div>
+    </header>
+
+    <section class="military-info">
+        <div class="mtrr-section">
+            <h2>MTRR: MÉTODO TÁCTICO DE RESISTENCIA REVOLUCIONARIA</h2>
+            <div class="mtrr-grid">
+                <div class="mtrr-card"><h3>FIJAR</h3><p>Localización y contención del enemigo.</p></div>
+                <div class="mtrr-card"><h3>ENVOLVER</h3><p>Maniobra de flanco para cercado táctico.</p></div>
+                <div class="mtrr-card"><h3>GOLPE</h3><p>Ataque fulminante con máxima potencia.</p></div>
+                <div class="mtrr-card"><h3>RETIRADA</h3><p>Ruptura de contacto e invisibilidad.</p></div>
+            </div>
+        </div>
+
+        <h2 class="section-title">COMPONENTES DE LA FANB</h2>
+        <div class="comp-grid">
+            <div class="comp-item">EJÉRCITO</div>
+            <div class="comp-item">ARMADA</div>
+            <div class="comp-item">AVIACIÓN</div>
+            <div class="comp-item">G.N.B</div>
+            <div class="comp-item">MILICIA</div>
+        </div>
+    </section>
+</div>
+
+<div id="app-container" style="display: none;">
+    <aside id="sidebar">
+        <div class="header">
+            <h3>COMANDO Y CONTROL</h3>
+            <p id="user-display-rank">USUARIO</p>
+        </div>
+        <div class="tools">
+            <div id="admin-panel" style="display: none;">
+                <h3>MANDO (ADMIN)</h3>
+                <button class="btn-main-faction aliado" onclick="openModal('modal-aliado')">DESPLEGAR ALIADOS</button>
+                <button class="btn-main-faction enemigo" onclick="openModal('modal-enemigo')">IDENTIFICAR ENEMIGOS</button>
+            </div>
+            
+            <h3>OPERACIONES</h3>
+            <button class="btn-export" onclick="exportTacticalPDF()">EXPORTAR MAPA PDF</button>
+            <button class="btn-danger-outline" onclick="location.reload()">CERRAR SESIÓN</button>
+        </div>
+    </aside>
+
+    <div id="map"></div>
+
+    <div id="console-container">
+        <div id="console-header"><span>REGISTRO DE OPERACIONES</span></div>
+        <div id="console-body"></div>
+    </div>
+</div>
+
+<div id="modal-registro" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModals()">&times;</span>
+        <h2>REGISTRO MILITAR</h2>
+        <input type="text" id="reg-nombre" placeholder="Nombres Completos">
+        <input type="text" id="reg-apellido" placeholder="Apellidos">
+        <input type="number" id="reg-cedula" placeholder="Cédula">
+        <input type="text" id="reg-grado" placeholder="Grado / Jerarquía">
+        <select id="reg-componente">
+            <option>Ejército</option><option>Armada</option><option>Aviación</option><option>G.N.B</option><option>Milicia</option>
+        </select>
+        <input type="email" id="reg-correo" placeholder="Correo Electrónico">
+        <input type="password" id="reg-pass" placeholder="Contraseña">
+        <button onclick="handleRegistro()">CREAR CUENTA</button>
+    </div>
+</div>
+
+<div id="modal-login" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModals()">&times;</span>
+        <h2>ACCESO SITAC</h2>
+        <input type="number" id="log-cedula" placeholder="Cédula (Usuario)">
+        <input type="text" id="log-grado" placeholder="Grado / Jerarquía">
+        <input type="password" id="log-pass" placeholder="Contraseña">
+        <button onclick="handleLogin()">INGRESAR AL SISTEMA</button>
+    </div>
+</div>
+
+<div id="modal-aliado" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModals()">&times;</span>
+        <h2>COMPONENTES FANB</h2>
+        <div class="grid-tools">
+            <button class="btn-asset-select" onclick="showAssets('Ejército')">EJÉRCITO</button>
+            <button class="btn-asset-select" onclick="showAssets('Armada')">ARMADA</button>
+            <button class="btn-asset-select" onclick="showAssets('Aviación')">AVIACIÓN</button>
+            <button class="btn-asset-select" onclick="showAssets('G.N.B')">G.N.B</button>
+            <button class="btn-asset-select" onclick="showAssets('Milicia')">MILICIA</button>
+        </div>
+        <div id="asset-selector-aliado" class="asset-grid"></div>
+    </div>
+</div>
+
+<div id="modal-enemigo" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModals()">&times;</span>
+        <h2>ACTIVOS ENEMIGOS</h2>
+        <div id="asset-selector-enemigo" class="asset-grid"></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
